@@ -48,33 +48,39 @@ def process_mailbox(M):
 
 
 def get_latest_email(M):
-        rv, data = M.uid('search', None, "All")
-        if rv != "OK":
-            print "No messages found"
-            return
-        ids = data[0]
-        id_list = ids.split()
-        latest_email_id = id_list[-1]
-        # search unique id
-        rv, data = M.uid('fetch', latest_email_id, "(RFC822)")
-        if rv != "OK":
-            print "Error getting message"
-            return
-        # here's the body, which is raw text of the whole email
-        # including headers and alternate payloads
-        raw_email = data[0][1]
-        # print raw_email
-        email_message = email.message_from_string(raw_email)
-        print "To: ", email_message['To'], "\n"
-        print "From: ", email.utils.parseaddr(email_message['From']), "\n"
-        # print all headers
-        # print email_message.items(), "\n"
+    """
+    get the most recent received email.
+    """
+    # basic search mode
+    data = search_email_by_all(M)
+    if data is None:
+        return
+    ids = data[0]
+    id_list = ids.split()
+    latest_email_id = id_list[-1]
+    # search unique id
+    rv, data = M.uid('fetch', latest_email_id, "(RFC822)")
+    if rv != "OK":
+        print "Error getting message"
+        return
+    # here's the body, which is raw text of the whole email
+    # including headers and alternate payloads
+    raw_email = data[0][1]
+    # print raw_email
+    email_message = email.message_from_string(raw_email)
+    print "To: ", email_message['To'], "\n"
+    print "From: ", email.utils.parseaddr(email_message['From']), "\n"
+    # print all headers
+    # print email_message.items(), "\n"
 
-        # print the body text
-        print get_first_text_block(email_message)
+    # print the body text
+    # print get_first_text_block(email_message)
 
 
 def get_first_text_block(email_message_instance):
+    """
+    retrieve the text block in the email body
+    """
     maintype = email_message_instance.get_content_maintype()
     if maintype == 'multipart':
         for part in email_message_instance.get_payload():
@@ -82,6 +88,42 @@ def get_first_text_block(email_message_instance):
                 return part.get_payload()
     elif maintype == 'text':
         return email_message_instance.get_payload()
+
+
+def search_email_by_all(M):
+    """
+    basic search mode, search all
+    """
+    rv, data = M.uid('search', None, 'All')
+    if check_response(rv):
+        return data
+    else:
+        return None
+
+
+def search_email_by_time(M):
+    """
+    search email by time
+    """
+    date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
+    rv, data = M.uid('search', None, '(SENTSINCE {date})'.format(date=date))
+    if check_response(rv):
+        return data
+    else:
+        return None
+
+
+def check_response(rv):
+    """
+    check whether response is OK or not
+    return true if it's OK
+    return false otherwise
+    """
+    if rv != 'OK':
+        print "No message found"
+        return False
+    return True
+
 
 # try to log into account
 M = imaplib.IMAP4_SSL('imap.gmail.com')
