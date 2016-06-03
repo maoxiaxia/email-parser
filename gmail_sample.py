@@ -48,7 +48,7 @@ def process_mailbox(M):
 
 
 def get_latest_email(M):
-        rv, data = M.search(None, "All")
+        rv, data = M.uid('search', None, "All")
         if rv != "OK":
             print "No messages found"
             return
@@ -64,6 +64,24 @@ def get_latest_email(M):
         # including headers and alternate payloads
         raw_email = data[0][1]
         # print raw_email
+        email_message = email.message_from_string(raw_email)
+        print "To: ", email_message['To'], "\n"
+        print "From: ", email.utils.parseaddr(email_message['From']), "\n"
+        # print all headers
+        # print email_message.items(), "\n"
+
+        # print the body text
+        print get_first_text_block(email_message)
+
+
+def get_first_text_block(email_message_instance):
+    maintype = email_message_instance.get_content_maintype()
+    if maintype == 'multipart':
+        for part in email_message_instance.get_payload():
+            if part.get_content_maintype() == 'text':
+                return part.get_payload()
+    elif maintype == 'text':
+        return email_message_instance.get_payload()
 
 # try to log into account
 M = imaplib.IMAP4_SSL('imap.gmail.com')
