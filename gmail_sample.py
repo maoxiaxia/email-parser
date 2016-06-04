@@ -52,7 +52,9 @@ def get_latest_email(M):
     get the most recent received email.
     """
     # basic search mode
-    data = search_email_by_all(M)
+    # data = search_email_by_all(M)
+    # data = search_email_by_time(M)
+    data = search_email_advanced(M)
     if data is None:
         return
     ids = data[0]
@@ -74,7 +76,7 @@ def get_latest_email(M):
     # print email_message.items(), "\n"
 
     # print the body text
-    # print get_first_text_block(email_message)
+    print get_first_text_block(email_message)
 
 
 def get_first_text_block(email_message_instance):
@@ -94,6 +96,7 @@ def search_email_by_all(M):
     """
     basic search mode, search all
     """
+    print "basic search mode\n"
     rv, data = M.uid('search', None, 'All')
     if check_response(rv):
         return data
@@ -105,8 +108,24 @@ def search_email_by_time(M):
     """
     search email by time
     """
+    print "search mail by time\n"
     date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
     rv, data = M.uid('search', None, '(SENTSINCE {date})'.format(date=date))
+    if check_response(rv):
+        return data
+    else:
+        return None
+
+
+def search_email_advanced(M):
+    """
+    limit search by date, subject, and exclude a sender
+    """
+    print "more advanced search mode\n"
+    date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
+    rv, data = M.uid('search', None, '(SENTSINCE {date} HEADER Subject "My"\
+    "Subject" NOT FROM "coders@codingame.com")'.format(date=date))
+
     if check_response(rv):
         return data
     else:
