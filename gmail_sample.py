@@ -25,9 +25,9 @@ def process_mailbox(M):
     Do something with emails messages in the folder.
     For the sake of this example, print some headers.
     """
-    data = search_email_advanced(M)
-    if data is None:
-        print "ERROR accessing data."
+    rv, data = M.search(None, "ALL")
+    if rv != 'OK':
+        print "No messages found!"
         return
 
     ids = data[0]
@@ -57,32 +57,60 @@ def get_latest_email(M):
 
     get the most recent received email.
     """
-    # basic search mode
-    # data = search_email_by_all(M)
-    # data = search_email_by_time(M)
+    data = search_email_by_time(M)
+    if data is None:
+        return
+    print "Access data succeed"
+    print data
+    ids = data[0]
+    id_list = ids.split()
+    print len(id_list)
+    if len(id_list) > 0:
+        latest_email_id = id_list[-1]
+        # search unique id
+        rv, data = M.uid('fetch', latest_email_id, "(RFC822)")
+        if rv != "OK":
+            print "Error getting message"
+            return
+        # here's the body, which is raw text of the whole email
+        # including headers and alternate payloads
+        raw_email = data[0][1]
+        # print raw_email
+        email_message = email.message_from_string(raw_email)
+        print "To: ", email_message['To'], "\n"
+        print "From: ", email.utils.parseaddr(email_message['From']), "\n"
+        # print all headers
+        # print email_message.items(), "\n"
+
+        # print the body text
+        print get_first_text_block(email_message)
+
+
+def get_group_of_emails(M):
+    """Get a group of emails.
+
+        This function will access emails from a group of contacts.
+    """
+    print "Try to access group of emails"
     data = search_email_advanced(M)
     if data is None:
         return
     ids = data[0]
     id_list = ids.split()
-    latest_email_id = id_list[-1]
-    # search unique id
-    rv, data = M.uid('fetch', latest_email_id, "(RFC822)")
-    if rv != "OK":
-        print "Error getting message"
-        return
-    # here's the body, which is raw text of the whole email
-    # including headers and alternate payloads
-    raw_email = data[0][1]
-    # print raw_email
-    email_message = email.message_from_string(raw_email)
-    print "To: ", email_message['To'], "\n"
-    print "From: ", email.utils.parseaddr(email_message['From']), "\n"
-    # print all headers
-    # print email_message.items(), "\n"
-
-    # print the body text
-    print get_first_text_block(email_message)
+    print id_list
+    for id_num in id_list:
+        rv, data = M.uid('fetch', id_num, "(RFC822)")
+        if rv != "OK":
+            print "Error getting message"
+            return
+        # get raw text of the whole email
+        raw_email = data[0][1]
+        email_message = email.message_from_string(raw_email)
+        # print sender and receivers
+        print "To: ", email_message['To'], "\n"
+        print "From: ", email.utils.parseaddr(email_message['From']), "\n"
+        # print body of received emails
+        print get_first_text_block(email_message)
 
 
 def get_first_text_block(email_message_instance):
@@ -131,11 +159,10 @@ def search_email_advanced(M):
 
     limit search by date, subject, and exclude a sender
     """
-    print "more advanced search mode\n"
-    date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
-    rv, data = M.uid('search', None, '(SENTSINCE {date} HEADER Subject "My"\
-    "Subject" FROM "coders@codingame.com")'.format(date=date))
-
+    print "search emails in advanced mode"
+    date = (datetime.date.today() - datetime.timedelta(60)).strftime("%d-%b-%Y")
+    # rv, data = M.uid('search', None, '(SENTSINCE {date} FROM "lmxvip@hotmail.com")'.format(date=date))
+    rv, data = M.uid('search', None, '(SENTSINCE {date} FROM "cindyyueweiluo@gmail.com")'.format(date=date))
     if check_response(rv):
         return data
     else:
@@ -175,7 +202,8 @@ rv, data = M.select(EMAIL_FOLDER)
 if rv == 'OK':
     print "Processing mailbox INBOX...\n"
     # get_latest_email(M)
-    process_mailbox(M)
+    # process_mailbox(M)
+    get_group_of_emails(M)
     M.close()
 else:
     print "ERROR: Unable to open mailbox ", rv
