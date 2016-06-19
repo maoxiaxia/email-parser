@@ -6,6 +6,9 @@
 # RKI July 2013
 # http://www.voidynullness.net/blog/2013/07/25/gmail-email-with-python-via-imap/
 #
+
+"""This module implements an email parser to access targeted info."""
+
 import sys
 import imaplib
 import email
@@ -17,14 +20,16 @@ EMAIL_FOLDER = "INBOX"
 
 
 def process_mailbox(M):
-    """
+    """.
+
     Do something with emails messages in the folder.
     For the sake of this example, print some headers.
     """
-    rv, data = M.search(None, "ALL")
-    if rv != 'OK':
-        print "No messages found!"
+    data = search_email_advanced(M)
+    if data is None:
+        print "ERROR accessing data."
         return
+
     ids = data[0]
     id_list = ids.split()
     for num in id_list:
@@ -48,7 +53,8 @@ def process_mailbox(M):
 
 
 def get_latest_email(M):
-    """
+    """.
+
     get the most recent received email.
     """
     # basic search mode
@@ -80,7 +86,8 @@ def get_latest_email(M):
 
 
 def get_first_text_block(email_message_instance):
-    """
+    """.
+
     retrieve the text block in the email body
     """
     maintype = email_message_instance.get_content_maintype()
@@ -93,7 +100,8 @@ def get_first_text_block(email_message_instance):
 
 
 def search_email_by_all(M):
-    """
+    """.
+
     basic search mode, search all
     """
     print "basic search mode\n"
@@ -105,7 +113,8 @@ def search_email_by_all(M):
 
 
 def search_email_by_time(M):
-    """
+    """.
+
     search email by time
     """
     print "search mail by time\n"
@@ -118,13 +127,14 @@ def search_email_by_time(M):
 
 
 def search_email_advanced(M):
-    """
+    """.
+
     limit search by date, subject, and exclude a sender
     """
     print "more advanced search mode\n"
     date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
     rv, data = M.uid('search', None, '(SENTSINCE {date} HEADER Subject "My"\
-    "Subject" NOT FROM "coders@codingame.com")'.format(date=date))
+    "Subject" FROM "coders@codingame.com")'.format(date=date))
 
     if check_response(rv):
         return data
@@ -133,10 +143,11 @@ def search_email_advanced(M):
 
 
 def check_response(rv):
-    """
+    """.
+
     check whether response is OK or not
     return true if it's OK
-    return false otherwise
+    return false otherwise.
     """
     if rv != 'OK':
         print "No message found"
@@ -162,8 +173,9 @@ if rv == 'OK':
 
 rv, data = M.select(EMAIL_FOLDER)
 if rv == 'OK':
-    print "Processing mailbox...\n"
-    get_latest_email(M)
+    print "Processing mailbox INBOX...\n"
+    # get_latest_email(M)
+    process_mailbox(M)
     M.close()
 else:
     print "ERROR: Unable to open mailbox ", rv
