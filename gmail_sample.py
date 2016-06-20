@@ -89,7 +89,7 @@ def get_latest_email(M):
 def get_group_of_emails(M):
     """Get a group of emails.
 
-        This function will access emails from a group of contacts.
+    This function will access emails from a group of contacts.
     """
     print "Try to access group of emails"
     data = search_email_advanced(M)
