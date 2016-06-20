@@ -61,10 +61,9 @@ def get_latest_email(M):
     if data is None:
         return
     print "Access data succeed"
-    print data
+    print "Got data as ", data
     ids = data[0]
     id_list = ids.split()
-    print len(id_list)
     if len(id_list) > 0:
         latest_email_id = id_list[-1]
         # search unique id
@@ -75,6 +74,7 @@ def get_latest_email(M):
         # here's the body, which is raw text of the whole email
         # including headers and alternate payloads
         raw_email = data[0][1]
+        print "raw_email is ", raw_email
         # print raw_email
         email_message = email.message_from_string(raw_email)
         print "To: ", email_message['To'], "\n"
@@ -95,6 +95,7 @@ def get_group_of_emails(M):
     data = search_email_advanced(M)
     if data is None:
         return
+    # print "Got data as ", data
     ids = data[0]
     id_list = ids.split()
     print id_list
@@ -105,12 +106,30 @@ def get_group_of_emails(M):
             return
         # get raw text of the whole email
         raw_email = data[0][1]
+        # print "*********raw data ", raw_email
         email_message = email.message_from_string(raw_email)
+        # print "++++++++++transformed string is ", email_message
         # print sender and receivers
         print "To: ", email_message['To'], "\n"
         print "From: ", email.utils.parseaddr(email_message['From']), "\n"
         # print body of received emails
-        print get_first_text_block(email_message)
+        # print get_first_text_block(email_message)
+        print get_email_body(email_message)
+
+
+def get_email_body(email_message):
+    """Get body text from a email.
+
+    return the body.
+    """
+    if email_message.is_multipart():
+        for part in email_message.walk():
+            ctype = part.get_content_type()
+            if ctype == 'text/plain':
+                print part.get_payload(decode=True)
+                break
+    else:
+        print email_message.get_payload(decode=True)
 
 
 def get_first_text_block(email_message_instance):
@@ -160,14 +179,16 @@ def search_email_advanced(M):
     limit search by date, subject, and exclude a sender
     """
     print "search emails in advanced mode"
-    date_range = datetime.date.today() - datetime.timedelta(60)
+    till_date = 360
+    date_range = datetime.date.today() - datetime.timedelta(till_date)
     date = date_range.strftime("%d-%b-%Y")
     # rv, data = M.uid('search', None, \
     #    '(SENTSINCE {date} FROM "lmxvip@hotmail.com")'.format(date=date))
     rv, data = M.uid(
         'search',
         None,
-        '(SENTSINCE {date} FROM "cindyyueweiluo@gmail.com")'.format(date=date)
+        '(SENTSINCE {date} FROM "drive-shares-noreply@google.com")'
+        .format(date=date)
         )
     if check_response(rv):
         return data
@@ -187,7 +208,7 @@ def check_response(rv):
         return False
     return True
 
-
+# Following is the program execution
 # try to log into account
 M = imaplib.IMAP4_SSL('imap.gmail.com')
 
