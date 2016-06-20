@@ -160,9 +160,15 @@ def search_email_advanced(M):
     limit search by date, subject, and exclude a sender
     """
     print "search emails in advanced mode"
-    date = (datetime.date.today() - datetime.timedelta(60)).strftime("%d-%b-%Y")
-    # rv, data = M.uid('search', None, '(SENTSINCE {date} FROM "lmxvip@hotmail.com")'.format(date=date))
-    rv, data = M.uid('search', None, '(SENTSINCE {date} FROM "cindyyueweiluo@gmail.com")'.format(date=date))
+    date_range = datetime.date.today() - datetime.timedelta(60)
+    date = date_range.strftime("%d-%b-%Y")
+    # rv, data = M.uid('search', None, \
+    #    '(SENTSINCE {date} FROM "lmxvip@hotmail.com")'.format(date=date))
+    rv, data = M.uid(
+        'search',
+        None,
+        '(SENTSINCE {date} FROM "cindyyueweiluo@gmail.com")'.format(date=date)
+        )
     if check_response(rv):
         return data
     else:
