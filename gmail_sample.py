@@ -153,18 +153,52 @@ def get_group_of_emails(M):
         # print sender and receivers
         print "To: ", email_message['To'], "\n"
         print "From: ", email.utils.parseaddr(email_message['From']), "\n"
-        result = parse_email(email_message)
-        print "Body: ", result['body']
-        print "Attachments", result['attachments']
+        result = parse_content(email_message)
+        # print results
+        printData(result)
 
 
-def parse_email(email_message):
+def printData(result):
+    """Print parsed info.
+
+    simple print statements.
+    """
+    print "Subject: \n", result['subject'], "\n"
+    print "Body: \n", result['body']
+    print "Html: \n", result['html']
+    print "Attachments: \n", result['attachments']
+
+
+def parse_subject(content):
+    """Parse email subject.
+
+    return subject.
+    """
+    parser = EmailParser()
+    msgobj = parser.parse(content)
+    if msgobj['Subject'] is not None:
+        # email has subject
+        decodefrag = decode_header(msgobj['Subject'])
+        subj_fragments = []
+        for s, enc in decodefrag:
+            if enc:
+                s = unicode(s, enc).encode('utf8', 'replace')
+            subj_fragments.append(s)
+        subject = ''.join(subj_fragments)
+    else:
+        subject = None
+    return subject
+
+
+def parse_content(email_message):
     """Get body text from a email.
 
     return the body.
     """
     attachments = []
     body = None
+    html = None
+    subject = parse_subject
     for part in email_message.walk():
         attachment = parse_attachment(part)
         if attachment:
@@ -177,9 +211,19 @@ def parse_email(email_message):
                 part.get_content_charset(),
                 'replace'
                 ).encode('utf8', 'replace')
-
+        elif part.get_content_type() == "text/html":
+            if html is None:
+                html = ""
+            html += unicode(
+                part.get_payload(decode=True),
+                part.get_content_charset(),
+                'replace'
+            ).encode('utf8', 'replace')
+    # return the parsed data
     return {
+        'subject': subject,
         'body': body,
+        'html': html,
         'attachments': attachments
     }
 
