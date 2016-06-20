@@ -22,42 +22,9 @@ from StringIO import StringIO
 
 EMAIL_FOLDER = "INBOX"
 
-
-def parse_attachment(message_part):
-    """Parse Email Attachment.
-
-    parse attachment.
-    """
-    content_disposition = message_part.get("Content-Disposition", None)
-    if content_disposition:
-        dispositions = content_disposition.strip().split(";")
-        if bool(content_disposition and
-                dispositions[0].lower() == "attachment"):
-
-                file_data = message_part.get_payload(decode=True)
-                attachment = StringIO(file_data)
-                attachment.content_type = message_part.get_content_type()
-                attachment.size = len(file_data)
-                attachment.name = None
-                attachment.create_date = None
-                attachment.mod_date = None
-                attachment.read_date = None
-
-                for param in dispositions[1:]:
-                    name, value = param.split("=")
-                    name = name.lower()
-
-                    if name == "filename":
-                        attachment.name = value
-                    elif name == "create-date":
-                        attachment.create_date = value  # TODO: datetime
-                    elif name == "modification-date":
-                        attachment.mod_date = value  # TODO: datetime
-                    elif name == "read-date":
-                        attachment.read_date = value  # TODO: datetime
-                return attachment
-    # no attachment
-    return None
+# ======================================================
+# Sample Implementations of Email parser
+# ======================================================
 
 
 def process_mailbox(M):
@@ -127,6 +94,51 @@ def get_latest_email(M):
         print get_first_text_block(email_message)
 
 
+def get_first_text_block(email_message_instance):
+    """.
+
+    retrieve the text block in the email body
+    """
+    maintype = email_message_instance.get_content_maintype()
+    if maintype == 'multipart':
+        for part in email_message_instance.get_payload():
+            if part.get_content_maintype() == 'text':
+                return part.get_payload()
+    elif maintype == 'text':
+        return email_message_instance.get_payload()
+
+
+def search_email_by_all(M):
+    """.
+
+    basic search mode, search all
+    """
+    print "basic search mode\n"
+    rv, data = M.uid('search', None, 'All')
+    if check_response(rv):
+        return data
+    else:
+        return None
+
+
+def search_email_by_time(M):
+    """.
+
+    search email by time
+    """
+    print "search mail by time\n"
+    date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
+    rv, data = M.uid('search', None, '(SENTSINCE {date})'.format(date=date))
+    if check_response(rv):
+        return data
+    else:
+        return None
+
+# ======================================================
+# Actual Implementations of Email parser
+# ======================================================
+
+
 def get_group_of_emails(M):
     """Get a group of emails.
 
@@ -139,7 +151,6 @@ def get_group_of_emails(M):
     # print "Got data as ", data
     ids = data[0]
     id_list = ids.split()
-    print id_list
     for id_num in id_list:
         rv, data = M.uid('fetch', id_num, "(RFC822)")
         if rv != "OK":
@@ -147,26 +158,13 @@ def get_group_of_emails(M):
             return
         # get raw text of the whole email
         raw_email = data[0][1]
-        print "*********raw data ", raw_email
         email_message = email.message_from_string(raw_email)
-        # print "++++++++++transformed string is ", email_message
         # print sender and receivers
         print "To: ", email_message['To'], "\n"
         print "From: ", email.utils.parseaddr(email_message['From']), "\n"
         result = parse_content(email_message)
         # print results
         printData(result)
-
-
-def printData(result):
-    """Print parsed info.
-
-    simple print statements.
-    """
-    print "Subject: \n", result['subject'], "\n"
-    print "Body: \n", result['body']
-    print "Html: \n", result['html']
-    print "Attachments: \n", result['attachments']
 
 
 def parse_subject(content):
@@ -228,45 +226,52 @@ def parse_content(email_message):
     }
 
 
-def get_first_text_block(email_message_instance):
-    """.
+def parse_attachment(message_part):
+    """Parse Email Attachment.
 
-    retrieve the text block in the email body
+    parse attachment.
     """
-    maintype = email_message_instance.get_content_maintype()
-    if maintype == 'multipart':
-        for part in email_message_instance.get_payload():
-            if part.get_content_maintype() == 'text':
-                return part.get_payload()
-    elif maintype == 'text':
-        return email_message_instance.get_payload()
+    content_disposition = message_part.get("Content-Disposition", None)
+    if content_disposition:
+        dispositions = content_disposition.strip().split(";")
+        if bool(content_disposition and
+                dispositions[0].lower() == "attachment"):
+
+                file_data = message_part.get_payload(decode=True)
+                attachment = StringIO(file_data)
+                attachment.content_type = message_part.get_content_type()
+                attachment.size = len(file_data)
+                attachment.name = None
+                attachment.create_date = None
+                attachment.mod_date = None
+                attachment.read_date = None
+
+                for param in dispositions[1:]:
+                    name, value = param.split("=")
+                    name = name.lower()
+
+                    if name == "filename":
+                        attachment.name = value
+                    elif name == "create-date":
+                        attachment.create_date = value  # TODO: datetime
+                    elif name == "modification-date":
+                        attachment.mod_date = value  # TODO: datetime
+                    elif name == "read-date":
+                        attachment.read_date = value  # TODO: datetime
+                return attachment
+    # no attachment
+    return None
 
 
-def search_email_by_all(M):
-    """.
+def printData(result):
+    """Print parsed info.
 
-    basic search mode, search all
+    simple print statements.
     """
-    print "basic search mode\n"
-    rv, data = M.uid('search', None, 'All')
-    if check_response(rv):
-        return data
-    else:
-        return None
-
-
-def search_email_by_time(M):
-    """.
-
-    search email by time
-    """
-    print "search mail by time\n"
-    date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
-    rv, data = M.uid('search', None, '(SENTSINCE {date})'.format(date=date))
-    if check_response(rv):
-        return data
-    else:
-        return None
+    print "Subject: \n", result['subject'], "\n"
+    print "Body: \n", result['body']
+    print "Html: \n", result['html']
+    print "Attachments: \n", result['attachments']
 
 
 def search_email_advanced(M):
@@ -274,7 +279,10 @@ def search_email_advanced(M):
 
     limit search by date, subject, and exclude a sender
     """
-    print "search emails in advanced mode"
+    print "\n=============================="
+    print "Search emails in advanced mode"
+    print "==============================\n"
+
     till_date = 360
     date_range = datetime.date.today() - datetime.timedelta(till_date)
     date = date_range.strftime("%d-%b-%Y")
@@ -304,7 +312,9 @@ def check_response(rv):
         return False
     return True
 
-# Following is the program execution
+# ======================================================
+# Running Program
+# ======================================================
 # try to log into account
 M = imaplib.IMAP4_SSL('imap.gmail.com')
 
