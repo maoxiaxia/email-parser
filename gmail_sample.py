@@ -12,11 +12,52 @@
 import sys
 import imaplib
 import email
-import email.header
 import datetime
 import account
+from email.Header import decode_header
+from email.Parser import Parser as EmailParser
+from email.utils import parseaddr
+from base64 import b64decode
+from StringIO import StringIO
 
 EMAIL_FOLDER = "INBOX"
+
+
+def parse_attachment(message_part):
+    """Parse Email Attachment.
+
+    parse attachment.
+    """
+    content_disposition = message_part.get("Content-Disposition", None)
+    if content_disposition:
+        dispositions = content_disposition.strip().split(";")
+        if bool(content_disposition and
+                dispositions[0].lower() == "attachment"):
+
+                file_data = message_part.get_payload(decode=True)
+                attachment = StringIO(file_data)
+                attachment.content_type = message_part.get_content_type()
+                attachment.size = len(file_data)
+                attachment.name = None
+                attachment.create_date = None
+                attachment.mod_date = None
+                attachment.read_date = None
+
+                for param in dispositions[1:]:
+                    name, value = param.split("=")
+                    name = name.lower()
+
+                    if name == "filename":
+                        attachment.name = value
+                    elif name == "create-date":
+                        attachment.create_date = value  # TODO: datetime
+                    elif name == "modification-date":
+                        attachment.mod_date = value  # TODO: datetime
+                    elif name == "read-date":
+                        attachment.read_date = value  # TODO: datetime
+                return attachment
+    # no attachment
+    return None
 
 
 def process_mailbox(M):
@@ -106,30 +147,41 @@ def get_group_of_emails(M):
             return
         # get raw text of the whole email
         raw_email = data[0][1]
-        # print "*********raw data ", raw_email
+        print "*********raw data ", raw_email
         email_message = email.message_from_string(raw_email)
         # print "++++++++++transformed string is ", email_message
         # print sender and receivers
         print "To: ", email_message['To'], "\n"
         print "From: ", email.utils.parseaddr(email_message['From']), "\n"
-        # print body of received emails
-        # print get_first_text_block(email_message)
-        print get_email_body(email_message)
+        result = parse_email(email_message)
+        print "Body: ", result['body']
+        print "Attachments", result['attachments']
 
 
-def get_email_body(email_message):
+def parse_email(email_message):
     """Get body text from a email.
 
     return the body.
     """
-    if email_message.is_multipart():
-        for part in email_message.walk():
-            ctype = part.get_content_type()
-            if ctype == 'text/plain':
-                print part.get_payload(decode=True)
-                break
-    else:
-        print email_message.get_payload(decode=True)
+    attachments = []
+    body = None
+    for part in email_message.walk():
+        attachment = parse_attachment(part)
+        if attachment:
+            attachments.append(attachment)
+        elif part.get_content_type() == "text/plain":
+            if body is None:
+                body = ""
+            body += unicode(
+                part.get_payload(decode=True),
+                part.get_content_charset(),
+                'replace'
+                ).encode('utf8', 'replace')
+
+    return {
+        'body': body,
+        'attachments': attachments
+    }
 
 
 def get_first_text_block(email_message_instance):
@@ -187,7 +239,7 @@ def search_email_advanced(M):
     rv, data = M.uid(
         'search',
         None,
-        '(SENTSINCE {date} FROM "drive-shares-noreply@google.com")'
+        '(SENTSINCE {date} FROM "cindyyueweiluo@gmail.com")'
         .format(date=date)
         )
     if check_response(rv):
