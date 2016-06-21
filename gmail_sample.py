@@ -14,10 +14,10 @@ import imaplib
 import email
 import datetime
 import account
+import base64
 from email.Header import decode_header
 from email.Parser import Parser as EmailParser
 from email.utils import parseaddr
-from base64 import b64decode
 from StringIO import StringIO
 
 EMAIL_FOLDER = "INBOX"
@@ -185,8 +185,11 @@ def parse_content(content):
         ctype = part.get_content_type()
         if ctype == "application/pdf":
             filename = part.get_filename()
-            open(filename, 'wb').\
-                write(part.get_payload(decode=True))
+            file = open(filename, 'wb')
+            file.write(part.get_payload(decode=True))
+            with open(filename, 'r') as myfile:
+                data = base64.b64decode(myfile.read().replace('\n', ''))
+            print data
 
         attachment = parse_attachment(part)
         if attachment:
