@@ -1,5 +1,6 @@
 account.py
-output
+*out
+*txt
 *pyc
 *pdf
 *swp
