@@ -159,7 +159,7 @@ def get_group_of_emails(M):
         # get raw text of the whole email
         raw_email = data[0][1]
         content = email.message_from_string(raw_email)
-        print raw_email
+        # print raw_email
         p = EmailParser()
         # print sender and receivers
         print "To: ", content['To'], "\n"
@@ -181,15 +181,11 @@ def parse_content(content):
     body = None
     html = None
     filename = None
+
     for part in content.walk():
         ctype = part.get_content_type()
         if ctype == "application/pdf":
-            filename = part.get_filename()
-            file = open(filename, 'wb')
-            file.write(part.get_payload(decode=True))
-            with open(filename, 'r') as myfile:
-                data = base64.b64decode(myfile.read().replace('\n', ''))
-            print data
+            decoded_data = decode_attachment(part)
 
         attachment = parse_attachment(part)
         if attachment:
@@ -214,8 +210,38 @@ def parse_content(content):
     return {
         'body': body,
         'html': html,
-        'filename': filename
+        'filename': decoded_data['filename']
         # 'attachments': attachments
+    }
+
+
+def decode_attachment(attachment):
+    """Decode attachment string by base64.
+
+    Return the decoded string and filename
+    """
+    filename = attachment.get_filename()
+    attachfile = open(filename, 'wb')
+    attachfile.write(attachment.get_payload(decode=True))
+    # create two output files used to compare decoded string
+    out1 = open('with_newline.out', 'wb')
+    out0 = open('without_newline.out', 'wb')
+
+    with open(filename, 'r') as attachfile:
+        data1 = base64.b64decode(attachfile.read())
+
+    with open(filename, 'r') as attachfile:
+        data0 = base64.b64decode(attachfile.read().replace('\n', ''))
+    # Redirect the output
+    out1.write(data1)
+    out0.write(data0)
+    # Close files
+    attachfile.close()
+    out1.close()
+    out0.close()
+    return {
+        'filename': filename,
+        'decoded_string': data0
     }
 
 
