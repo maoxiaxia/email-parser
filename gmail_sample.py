@@ -159,6 +159,7 @@ def get_group_of_emails(M):
         # get raw text of the whole email
         raw_email = data[0][1]
         content = email.message_from_string(raw_email)
+        print raw_email
         p = EmailParser()
         # print sender and receivers
         print "To: ", content['To'], "\n"
@@ -179,7 +180,14 @@ def parse_content(content):
     attachments = []
     body = None
     html = None
+    filename = None
     for part in content.walk():
+        ctype = part.get_content_type()
+        if ctype == "application/pdf":
+            filename = part.get_filename()
+            open(filename, 'wb').\
+                write(part.get_payload(decode=True))
+
         attachment = parse_attachment(part)
         if attachment:
             attachments.append(attachment)
@@ -203,7 +211,8 @@ def parse_content(content):
     return {
         'body': body,
         'html': html,
-        'attachments': attachments
+        'filename': filename
+        # 'attachments': attachments
     }
 
 
@@ -251,7 +260,8 @@ def printData(result):
     """
     print "Body: \n", result['body']
     print "Html: \n", result['html']
-    print "Attachments: \n", result['attachments']
+    print "Attachment: \n", result['filename']
+    # print "Attachments: \n", result['attachments']
 
 
 def search_email_advanced(M):
