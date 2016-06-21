@@ -163,6 +163,7 @@ def get_group_of_emails(M):
         # print sender and receivers
         print "To: ", content['To'], "\n"
         print "From: ", email.utils.parseaddr(content['From']), "\n"
+        print "Date: ", content['Date'], "\n"
         print "Subject: ", p.parsestr(raw_email).get('Subject'), \
             "\n"
         result = parse_content(content)
@@ -313,8 +314,6 @@ if rv == 'OK':
 rv, data = M.select(EMAIL_FOLDER)
 if rv == 'OK':
     print "Processing mailbox INBOX...\n"
-    # get_latest_email(M)
-    # process_mailbox(M)
     get_group_of_emails(M)
     M.close()
 else:
