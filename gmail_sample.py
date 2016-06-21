@@ -158,37 +158,19 @@ def get_group_of_emails(M):
             return
         # get raw text of the whole email
         raw_email = data[0][1]
-        email_message = email.message_from_string(raw_email)
+        content = email.message_from_string(raw_email)
+        p = EmailParser()
         # print sender and receivers
-        print "To: ", email_message['To'], "\n"
-        print "From: ", email.utils.parseaddr(email_message['From']), "\n"
-        result = parse_content(email_message)
+        print "To: ", content['To'], "\n"
+        print "From: ", email.utils.parseaddr(content['From']), "\n"
+        print "Subject: ", p.parsestr(raw_email).get('Subject'), \
+            "\n"
+        result = parse_content(content)
         # print results
         printData(result)
 
 
-def parse_subject(content):
-    """Parse email subject.
-
-    return subject.
-    """
-    parser = EmailParser()
-    msgobj = parser.parse(content)
-    if msgobj['Subject'] is not None:
-        # email has subject
-        decodefrag = decode_header(msgobj['Subject'])
-        subj_fragments = []
-        for s, enc in decodefrag:
-            if enc:
-                s = unicode(s, enc).encode('utf8', 'replace')
-            subj_fragments.append(s)
-        subject = ''.join(subj_fragments)
-    else:
-        subject = None
-    return subject
-
-
-def parse_content(email_message):
+def parse_content(content):
     """Get body text from a email.
 
     return the body.
@@ -196,8 +178,7 @@ def parse_content(email_message):
     attachments = []
     body = None
     html = None
-    subject = parse_subject
-    for part in email_message.walk():
+    for part in content.walk():
         attachment = parse_attachment(part)
         if attachment:
             attachments.append(attachment)
@@ -219,7 +200,6 @@ def parse_content(email_message):
             ).encode('utf8', 'replace')
     # return the parsed data
     return {
-        'subject': subject,
         'body': body,
         'html': html,
         'attachments': attachments
@@ -268,7 +248,6 @@ def printData(result):
 
     simple print statements.
     """
-    print "Subject: \n", result['subject'], "\n"
     print "Body: \n", result['body']
     print "Html: \n", result['html']
     print "Attachments: \n", result['attachments']
