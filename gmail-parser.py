@@ -15,9 +15,8 @@ import email
 import datetime
 import account
 import base64
-from email.Header import decode_header
+import os
 from email.Parser import Parser as EmailParser
-from email.utils import parseaddr
 from StringIO import StringIO
 
 EMAIL_FOLDER = "INBOX"
@@ -180,7 +179,6 @@ def parse_content(content):
     attachments = []
     body = None
     html = None
-    filename = None
 
     for part in content.walk():
         ctype = part.get_content_type()
@@ -215,28 +213,33 @@ def parse_content(content):
     }
 
 
-def decode_attachment(attachment):
+def decode_attachment(attachment, download_folder='./downloads'):
     """Decode attachment string by base64.
 
     Return the decoded string and filename
     """
     filename = attachment.get_filename()
-    attachfile = open(filename, 'wb')
-    attachfile.write(attachment.get_payload(decode=True))
+    # get downloads directory path for attachment
+    att_path = os.path.join(download_folder, filename)
+
+    if not os.path.isfile(att_path):
+        fp = open(att_path, 'wb')
+        fp.write(attachment.get_payload(decode=True))
+        fp.close()
+
     # create two output files used to compare decoded string
     out1 = open('with_newline.out', 'wb')
     out0 = open('without_newline.out', 'wb')
 
-    with open(filename, 'r') as attachfile:
+    with open(att_path, 'r') as attachfile:
         data1 = base64.b64decode(attachfile.read())
 
-    with open(filename, 'r') as attachfile:
+    with open(att_path, 'r') as attachfile:
         data0 = base64.b64decode(attachfile.read().replace('\n', ''))
     # Redirect the output
     out1.write(data1)
     out0.write(data0)
     # Close files
-    attachfile.close()
     out1.close()
     out0.close()
     return {
