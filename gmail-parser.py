@@ -181,8 +181,7 @@ def parse_content(content):
     html = None
 
     for part in content.walk():
-        ctype = part.get_content_type()
-        if ctype == "application/pdf":
+        if part.get('Content-Disposition') is not None:
             decoded_data = decode_attachment(part)
 
         attachment = parse_attachment(part)
@@ -305,7 +304,7 @@ def search_email_advanced(M):
     print "Search emails in advanced mode"
     print "==============================\n"
 
-    till_date = 360
+    till_date = 0
     date_range = datetime.date.today() - datetime.timedelta(till_date)
     date = date_range.strftime("%d-%b-%Y")
     # rv, data = M.uid('search', None, \
@@ -313,7 +312,7 @@ def search_email_advanced(M):
     rv, data = M.uid(
         'search',
         None,
-        '(SENTSINCE {date} FROM "cindyyueweiluo@gmail.com")'
+        '(SENTSINCE {date} FROM "lmxvip@hotmail.com")'
         .format(date=date)
         )
     if check_response(rv):
