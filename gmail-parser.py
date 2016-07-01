@@ -228,22 +228,22 @@ def decode_attachment(attachment, download_folder='./downloads'):
 
     # create two output files used to compare decoded string
     out1 = open('with_newline.out', 'wb')
-    out0 = open('without_newline.out', 'wb')
+    # out0 = open('without_newline.out', 'wb')
 
     with open(att_path, 'r') as attachfile:
         data1 = base64.b64decode(attachfile.read())
 
-    with open(att_path, 'r') as attachfile:
-        data0 = base64.b64decode(attachfile.read().replace('\n', ''))
+    # with open(att_path, 'r') as attachfile:
+    #    data0 = base64.b64decode(attachfile.read().replace('\n', ''))
     # Redirect the output
     # out1.write(data1)
     # out0.write(data0)
     # Close files
     out1.close()
-    out0.close()
+    # out0.close()
     return {
         'filename': filename,
-        'decoded_string': data0
+        'decoded_string': data1
     }
 
 
