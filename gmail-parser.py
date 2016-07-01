@@ -236,8 +236,8 @@ def decode_attachment(attachment, download_folder='./downloads'):
     with open(att_path, 'r') as attachfile:
         data0 = base64.b64decode(attachfile.read().replace('\n', ''))
     # Redirect the output
-    out1.write(data1)
-    out0.write(data0)
+    # out1.write(data1)
+    # out0.write(data0)
     # Close files
     out1.close()
     out0.close()
