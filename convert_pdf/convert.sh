@@ -28,15 +28,16 @@ python generate_csv.py $output
 rm *txt
 mv *csv csv_files/
 
-# convert generated output file to xls
-
 # Iterate through each file in the csv files folder
 FILES=csv_files/*.csv
 
 for f in $FILES
 do
-	echo "file $f"
-	cat $f
+	filename=$(basename "$f")
+	
+	# Extract the filename without the file extension
+	filename="${filename%.*}"
+	
+	# Convert csv file to xls file with its name
+	csv2xls $f -o xls_files/$filename.xls
 done
-
-csv2xls csv_files/*csv -o xls_files/out.xls
