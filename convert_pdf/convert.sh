@@ -26,4 +26,7 @@ python generate_csv.py $output
 
 # remove all the txt files and move csv files to output_file folder
 rm *txt
-mv *csv output_files
+mv *csv output_csv_files/
+
+# convert generated output file to xls
+csv2xls output_csv_files/*csv -o output_xls_files/out.xls
