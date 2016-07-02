@@ -1,7 +1,6 @@
 #!/usr/bin/python
-import os
 import sys
-
+import csv
 
 def get_rows_num(file_name):
     """Get number of rows in table.
@@ -126,6 +125,21 @@ def print_table(table):
         print "\n"
 
 
+def generate_csv(table):
+    """Generate csv file.
+
+    generate the file.
+    """
+    with open("result.csv", "w") as csvfile:
+        fieldnames = table[0]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for i in range(len(table)-1):
+            for j in range(len(table[i])):
+                writer.writerow({table[0][j]: table[i+1][j]})
+
+
 def main():
     # Check number of argv
     if len(sys.argv) != 2:
@@ -161,6 +175,8 @@ def main():
     # Fill the rest of cells in table
     fill_table(info)
     print_table(table)
+
+    generate_csv(table)
 
 
 if __name__ == '__main__':
