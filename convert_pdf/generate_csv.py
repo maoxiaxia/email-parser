@@ -125,12 +125,12 @@ def print_table(table):
         print "\n"
 
 
-def generate_csv(table):
+def generate_csv(table, header):
     """Generate csv file.
 
     generate the file.
     """
-    with open("result.csv", "w") as csvfile:
+    with open("%s.csv" % header, "w") as csvfile:
         for i in range(len(table)):
             for j in range(len(table[i])):
                 if j != len(table[i])-1:
@@ -174,9 +174,10 @@ def main():
 
     # Fill the rest of cells in table
     fill_table(info)
+
     print_table(table)
 
-    generate_csv(table)
+    generate_csv(table, trimmed_header)
 
 
 if __name__ == '__main__':

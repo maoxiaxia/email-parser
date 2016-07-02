@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # generate the converted txt file from pdf
-python main.py
+python pdf2txt.py
 
 # set up all the input and output files
 input="original.txt"
@@ -23,3 +23,7 @@ rm $tmp
 
 # parse the trimmed outputfile and generate the csv file
 python generate_csv.py $output
+
+# remove all the txt files and move csv files to output_file folder
+rm *txt
+mv *csv output_files
