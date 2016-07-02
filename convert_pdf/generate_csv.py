@@ -131,13 +131,13 @@ def generate_csv(table):
     generate the file.
     """
     with open("result.csv", "w") as csvfile:
-        fieldnames = table[0]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-        for i in range(len(table)-1):
+        for i in range(len(table)):
             for j in range(len(table[i])):
-                writer.writerow({table[0][j]: table[i+1][j]})
+                if j != len(table[i])-1:
+                    tmp = table[i][j] + ","
+                else:
+                    tmp = table[i][j] + "\n"
+                csvfile.write(tmp)
 
 
 def main():
