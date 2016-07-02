@@ -16,6 +16,8 @@ input=$tmp
 # remove ^L
 tr -d '' < $input > $output
 
+# replace \t with space
+
 # remove the temp file and also the result file
 rm $tmp
 
