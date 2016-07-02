@@ -73,8 +73,6 @@ def get_header(data):
         if len(item) > 10:
             header = item
             break
-    # Trimmed the header
-    header = header.replace("\t \xc2\xa0", " ")
     return header
 
 
@@ -88,24 +86,30 @@ def fill_table(info):
     table = info["table"]
     header = info["header"]
     row_num = info["row_num"]
-    col_num = info["col_num"]
 
     currency_type_num = row_num - 1
     row_index = 0
     col_index = 0
-    for i, val in enumerate(data):
+    i = 0
+    while i < len(data):
         if data[i].find("%") > 0:
             # stat data
-            while row_index < currency_type_num:
+            while i < len(data) and row_index < currency_type_num:
                 table[row_index+1].append(data[i])
                 row_index += 1
+                i += 1
             # Reset row_index
             row_index = 0
         else:
-            # time marker
-            if col_index < col_num and data[i].replace("\t \xc2\xa0", " ") != header:
-                table[0].append(data[i])
-                col_index += 1
+            if i < row_num - 1:
+                # currency Type
+                table[i+1].append(data[i])
+            else:
+                # time marker
+                if data[i] != header:
+                    table[0].append(data[i])
+            i += 1
+
     # End loop
     return None
 
@@ -115,9 +119,8 @@ def print_table(table):
 
     simple print.
     """
-    print(len(table))
     for i in range(len(table)):
-        print "Row ", i
+        print "Row ", i, "\t",
         for j in range(len(table[i])):
             print table[i][j],
         print "\n"
@@ -146,22 +149,17 @@ def main():
 
     # Get header of table
     header = get_header(data)
+    trimmed_header = header.replace("\t \xc2\xa0", " ")
 
     info = {
         "data": data,
         "row_num": row_num,
-        "col_num": col_num,
         "table": table,
         "header": header
     }
 
     # Fill the rest of cells in table
     fill_table(info)
-
-    print(data)
-    print "=========================="
-    print(table)
-    print "=========================="
     print_table(table)
 
 
