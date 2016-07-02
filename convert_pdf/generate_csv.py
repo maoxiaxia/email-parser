@@ -163,7 +163,7 @@ def main():
 
     # Get header of table
     header = get_header(data)
-    trimmed_header = header.replace("\t \xc2\xa0", " ")
+    trimmed_header = header.replace("\t \xc2\xa0", "_")
 
     info = {
         "data": data,
