@@ -36,6 +36,20 @@ def init_table(row_num):
     return table
 
 
+def get_data(file_name):
+    """Get the parsed data.
+
+    return the data saved in array.
+    """
+    data = []
+    with open(file_name, "r") as file:
+        for line in file:
+            if (line != "\n"):
+                data.append(line.rstrip("\n"))
+
+    return data
+
+
 def main():
     # Check number of argv
     if len(sys.argv) != 2:
@@ -51,6 +65,9 @@ def main():
     # Generate init table
     table = init_table(row_num)
 
+    # Get the parsed data saved in array
+    data = get_data(file_name)
+    print(data)
     print(table)
 
 
