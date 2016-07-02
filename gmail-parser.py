@@ -212,7 +212,7 @@ def parse_content(content):
     }
 
 
-def decode_attachment(attachment, download_folder='./downloads'):
+def decode_attachment(attachment, download_folder='convert_pdf/downloads'):
     """Decode attachment string by base64.
 
     Return the decoded string and filename
@@ -227,7 +227,7 @@ def decode_attachment(attachment, download_folder='./downloads'):
         fp.close()
 
     # create two output files used to compare decoded string
-    out1 = open('with_newline.out', 'wb')
+    # out1 = open('with_newline.out', 'wb')
     # out0 = open('without_newline.out', 'wb')
 
     with open(att_path, 'r') as attachfile:
@@ -239,7 +239,7 @@ def decode_attachment(attachment, download_folder='./downloads'):
     # out1.write(data1)
     # out0.write(data0)
     # Close files
-    out1.close()
+    # out1.close()
     # out0.close()
     return {
         'filename': filename,
@@ -304,7 +304,7 @@ def search_email_advanced(M):
     print "Search emails in advanced mode"
     print "==============================\n"
 
-    till_date = 0
+    till_date = 50
     date_range = datetime.date.today() - datetime.timedelta(till_date)
     date = date_range.strftime("%d-%b-%Y")
     # rv, data = M.uid('search', None, \
@@ -312,7 +312,7 @@ def search_email_advanced(M):
     rv, data = M.uid(
         'search',
         None,
-        '(SENTSINCE {date} FROM "lmxvip@hotmail.com")'
+        '(SENTSINCE {date} FROM "cindyyueweiluo@gmail.com")'
         .format(date=date)
         )
     if check_response(rv):

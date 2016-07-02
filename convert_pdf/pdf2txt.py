@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import pdf_converter
+import os
 
-conveted_text = pdf_converter.convert('format_files/sample.pdf', pages=None)
-# print conveted_text
-
-# write the converted result to a file
-conveted_text.replace(r'\r', '')
-file = open("original.txt", "wb")
-file.write(conveted_text)
-file.close
+path = "./downloads/"
+for f in os.listdir(path):
+	conveted_text = pdf_converter.convert("%s/%s" % (path, f), pages=None)
+	# write the converted result to a file
+	file = open("txt_files/%s.txt" % f, "wb")
+	file.write(conveted_text)
+	file.close
