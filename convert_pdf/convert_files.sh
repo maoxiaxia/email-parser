@@ -18,3 +18,6 @@ tr -d '' < $input > $output
 
 # remove the temp file and also the result file
 rm $tmp
+
+# parse the trimmed outputfile and generate the csv file
+python generate_csv.py $output

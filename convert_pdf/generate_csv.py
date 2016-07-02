@@ -1,16 +1,58 @@
 #!/usr/bin/python
 import os
 import sys
-import tempfile
+
+def get_rows_num(file_name):
+    """Get number of rows in table.
+
+    return number of rows
+    """
+    # By default add the first datetime
+    row_num = 1
+    with open(file_name, "r") as file:
+        for line in file:
+            if line == "\n":
+                break
+            else:
+                row_num += 1
+
+    return row_num
+
+
+def init_table(row_num):
+    """Initialize the table.
+
+    return the init table in the form of array
+    """
+    # Initialize the number of rows in table
+    table = []
+    for i in range(row_num):
+        row = []
+        table.append(row)
+
+    # Append the default first cell to the table
+    table[0].append("Curreny Type")
+
+    return table
 
 
 def main():
-    # Open file
-    file_name = sys.argv[1]
-    fp = open(file_name, "r")
-    
-    # Close the file
-    fp.close()
+    # Check number of argv
+    if len(sys.argv) != 2:
+        print "Oops, you might forget add the output file as arg"
+        sys.exit(0)
 
-if __name__ = '__main__':
+    # Get the file name
+    file_name = sys.argv[1]
+
+    # Get number of rows in table
+    row_num = get_rows_num(file_name)
+
+    # Generate init table
+    table = init_table(row_num)
+
+    print(table)
+
+
+if __name__ == '__main__':
     main()
