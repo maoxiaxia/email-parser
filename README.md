@@ -1,4 +1,4 @@
-Gmail-Parser
+Email-Parser
 ============
 [![Build Status](https://travis-ci.org/luo149/gmail-parser.svg?branch=master)](https://travis-ci.org/luo149/gmail-parser)
 
